@@ -120,40 +120,26 @@ public class InstallCert {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         for (int i = 0; i < chain.length; i++) {
             X509Certificate cert = chain[i];
-            System.out.println
-                    (" " + (i + 1) + " Subject " + cert.getSubjectDN());
+          	String alias = host + "-" + (i + 1);
+          	sha1.update(cert.getEncoded());
+          	md5.update(cert.getEncoded());
+          	
+            System.out.println(alias + " :");
+            System.out.println("   Subject " + cert.getSubjectDN());
             System.out.println("   Issuer  " + cert.getIssuerDN());
-            sha1.update(cert.getEncoded());
-            System.out.println("   sha1    " + toHexString(sha1.digest()));
-            md5.update(cert.getEncoded());
+            System.out.println("   sha1    " + toHexString(sha1.digest()));            
             System.out.println("   md5     " + toHexString(md5.digest()));
             System.out.println();
+          
+        	ks.setCertificateEntry(alias, cert);
         }
-
-        System.out.println("Enter certificate to add to trusted keystore or 'q' to quit: [1]");
-        String line = reader.readLine().trim();
-        int k;
-        try {
-            k = (line.length() == 0) ? 0 : Integer.parseInt(line) - 1;
-        } catch (NumberFormatException e) {
-            System.out.println("KeyStore not changed");
-            return;
-        }
-
-        X509Certificate cert = chain[k];
-        String alias = host + "-" + (k + 1);
-        ks.setCertificateEntry(alias, cert);
 
         OutputStream out = new FileOutputStream("jssecacerts");
         ks.store(out, passphrase);
         out.close();
 
         System.out.println();
-        System.out.println(cert);
-        System.out.println();
-        System.out.println
-                ("Added certificate to keystore 'jssecacerts' using alias '"
-                        + alias + "'");
+        System.out.println("Certificate(s) added to keystore 'jssecacerts'");
     }
 
     private static final char[] HEXDIGITS = "0123456789abcdef".toCharArray();
